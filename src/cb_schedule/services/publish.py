@@ -9,6 +9,7 @@ import sys
 from datetime import datetime, date, timedelta
 from pathlib import Path
 import yaml
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from cb_schedule.services.render_day import get_ferries_for_day, render_day_html, load_schedule
 
 def copy_static_files(template_dir: Path, output_dir: Path):
@@ -21,33 +22,26 @@ def copy_static_files(template_dir: Path, output_dir: Path):
     else:
         print(f"Warning: CSS file not found at {css_source}")
 
-def generate_index_html(output_dir: Path, date_range: list, title: str = "Ferry Schedule"):
-    """Generate a simple index.html with links to all days."""
-    index_content = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header class="page-header">
-        <h1>{title}</h1>
-        <p>Select a date to view ferry schedules</p>
-    </header>
+def generate_index_html(template_dir: Path, output_dir: Path, date_range: list, title: str = "Ferry Schedule"):
+    """Generate a simple index.html that redirects to today's date."""
+    # Set up Jinja2 environment
+    env = Environment(
+        loader=FileSystemLoader(template_dir),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
     
-    <main class="schedule-container">
-        <div class="date-grid">
-            {"".join(f'<a href="{d.isoformat()}.html" class="date-link">{d.strftime("%a %b %d")}</a>' for d in date_range)}
-        </div>
-    </main>
+    # Load template
+    template = env.get_template('home.html')
     
-    <footer class="page-footer">
-        <p>Generated on {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
-    </footer>
-</body>
-</html>"""
+    # Prepare template data
+    template_data = {
+        'title': title,
+        'available_dates': date_range,
+        'fallback_date': date_range[0].isoformat()
+    }
+    
+    # Render HTML
+    index_content = template.render(**template_data)
     
     index_path = output_dir / "index.html"
     with open(index_path, 'w') as f:
@@ -64,13 +58,7 @@ def filter_ferries_by_direction(ferries, direction):
         return ferries
 
 def generate_filtered_pages(schedule_path, template_dir, output_dir, start_date, days=30, use_12h=False):
-    """Generate filtered pages for a date range."""
-    
-    # Generate arrive/ and depart/ subdirectories
-    arrive_dir = output_dir / "arrive"
-    depart_dir = output_dir / "depart" 
-    arrive_dir.mkdir(exist_ok=True)
-    depart_dir.mkdir(exist_ok=True)
+    """Generate filtered pages for a date range with structure /<date>/{arrive,depart}/"""
     
     # Load schedule data once
     schedule_data = load_schedule(schedule_path)
@@ -78,20 +66,28 @@ def generate_filtered_pages(schedule_path, template_dir, output_dir, start_date,
     # Generate pages for each date
     current_date = start_date
     for i in range(days):
+        # Create date directory
+        date_dir = output_dir / current_date.isoformat()
+        date_dir.mkdir(exist_ok=True)
+        
+        # Create arrive/ and depart/ subdirectories under date
+        arrive_dir = date_dir / "arrive"
+        depart_dir = date_dir / "depart"
+        arrive_dir.mkdir(exist_ok=True)
+        depart_dir.mkdir(exist_ok=True)
+        
         # Get all ferries for this day
         all_ferries, services, timezone = get_ferries_for_day(schedule_data, current_date, use_12h)
         
         # Generate arrival page
         arrive_ferries = filter_ferries_by_direction(all_ferries, "arrive")
-        arrive_filename = f"{current_date.isoformat()}.html"
-        arrive_path = arrive_dir / arrive_filename
+        arrive_path = arrive_dir / "index.html"
         render_day_html(current_date, arrive_ferries, services, timezone, template_dir, arrive_path, show_direction_colors=False)
         print(f"Generated arrivals: {arrive_path} ({len(arrive_ferries)} ferries)")
         
         # Generate departure page
         depart_ferries = filter_ferries_by_direction(all_ferries, "depart")
-        depart_filename = f"{current_date.isoformat()}.html"
-        depart_path = depart_dir / depart_filename
+        depart_path = depart_dir / "index.html"
         render_day_html(current_date, depart_ferries, services, timezone, template_dir, depart_path, show_direction_colors=False)
         print(f"Generated departures: {depart_path} ({len(depart_ferries)} ferries)")
         
@@ -120,24 +116,26 @@ def publish_site(schedule_path: Path, template_dir: Path, output_dir: Path,
         # Get ferries for this day
         ferries, services, timezone = get_ferries_for_day(schedule_data, current_date, use_12h)
         
-        # Generate HTML for this day
-        output_file = output_dir / f"{current_date.isoformat()}.html"
+        # Create date directory and generate main day page
+        date_dir = output_dir / current_date.isoformat()
+        date_dir.mkdir(exist_ok=True)
+        output_file = date_dir / "index.html"
         render_day_html(current_date, ferries, services, timezone, template_dir, output_file)
         
         print(f"Generated: {output_file}")
         current_date += timedelta(days=1)
     
     # Generate index page
-    generate_index_html(output_dir, date_range, "Chebeague Island Ferry Schedule")
+    generate_index_html(template_dir, output_dir, date_range, "Chebeague Island Ferry Schedule")
     
     # Generate filtered pages (arrivals/departures)
     print("\nGenerating filtered pages...")
     generate_filtered_pages(schedule_path, template_dir, output_dir, start_date, days, use_12h)
     
     print(f"\nStatic site published to: {output_dir}")
-    print(f"  Main pages: {output_dir}/*.html")
-    print(f"  Arrivals: {output_dir}/arrive/*.html") 
-    print(f"  Departures: {output_dir}/depart/*.html")
+    print(f"  Main pages: {output_dir}/*/index.html")
+    print(f"  Arrivals: {output_dir}/*/arrive/index.html") 
+    print(f"  Departures: {output_dir}/*/depart/index.html")
     print(f"To serve locally: python -m http.server -d {output_dir}")
 
 def parse_args():

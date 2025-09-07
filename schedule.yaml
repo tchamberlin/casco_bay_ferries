@@ -1,0 +1,583 @@
+services:
+  ctc:
+    tzid: America/New_York
+    schedules:
+    - start: 2022-10-14
+      end: 2023-05-18
+      url: https://www.ctcferry.org/#schedule
+      ferries:
+      - time: 06:30
+        byday:
+        - WE
+        - TH
+        - SA
+      - time: 08:00
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '10:00'
+        byday:
+        - TU
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '14:00'
+        byday:
+        - WE
+        - FR
+        - SU
+      - time: '15:45'
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - SA
+        - SU
+      - time: '16:45'
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '18:15'
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+      - time: '19:15'
+        byday:
+        - SU
+      - time: '20:00'
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+      - time: '21:15'
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+    - name: Summer
+      url: https://www.ctcferry.org/#schedule
+      start: 2025-05-16
+      ferries:
+      - time: 06:30
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id001
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+      - time: 06:45
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id001
+      - time: 08:00
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id002
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: 08:15
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id002
+      - time: '10:00'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id003
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '10:15'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id003
+      - time: '12:00'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id004
+        - MO
+        - TU
+        - WE
+        - TH
+        - SA
+        - SU
+      - time: '12:15'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id004
+      - time: '14:00'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id005
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '14:15'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id005
+      - time: '15:45'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id006
+        - MO
+        - WE
+        - TH
+        - SA
+        - SU
+      - time: '16:00'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id006
+      - time: '16:45'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id007
+        - MO
+        - TU
+        - WE
+        - FR
+        - SA
+        - SU
+      - time: '17:00'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id007
+      - time: '18:15'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id008
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+      - time: '18:30'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id008
+      - time: '19:15'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id009
+        - SU
+      - time: '19:30'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id009
+      - time: '20:00'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id010
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+      - time: '20:15'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id010
+      - time: '21:15'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id011
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+      - time: '21:30'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id011
+      - time: '22:30'
+        from: Chebeague Island
+        to: Cousins Island
+        byday: &id012
+        - FR
+        - SA
+      - time: '22:45'
+        from: Cousins Island
+        to: Chebeague Island
+        byday: *id012
+  cbl:
+    tzid: America/New_York
+    schedules:
+    - start: 2025-06-21
+      end: 2025-09-01
+      name: Summer
+      url: https://www.cascobaylines.com/schedules/chebeague-island-schedule/summer/
+      ferries:
+      - time: 05:00
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: 06:00
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: 08:00
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: 09:20
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '10:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '11:40'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '12:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '14:00'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '15:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '16:30'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '18:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '19:15'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '21:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '22:20'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+    - start: 2025-09-02
+      end: 2025-10-13
+      name: Fall
+      url: https://www.cascobaylines.com/schedules/chebeague-island-schedule/fall/
+      ferries:
+      - time: 05:00
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: 06:00
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: 08:00
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: 09:10
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '10:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '11:40'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '12:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '14:00'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '15:00'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '16:20'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '17:45'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '19:00'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '20:30'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - SA
+        - SU
+      - time: '21:55'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - SA
+        - SU
+      - time: '21:15'
+        from: Portland
+        to: Chebeague Island
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU
+      - time: '22:35'
+        from: Chebeague Island
+        to: Portland
+        byday:
+        - MO
+        - TU
+        - WE
+        - TH
+        - FR
+        - SA
+        - SU

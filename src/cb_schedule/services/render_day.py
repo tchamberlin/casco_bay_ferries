@@ -75,6 +75,7 @@ def get_ferries_for_day(schedule_data: dict, target_date: date, use_12h: bool = 
         })
         
         if active_schedule:
+            service_url = active_schedule.get('url', '#')
             ferries = active_schedule.get('ferries', [])
             for ferry in ferries:
                 byday = ferry.get('byday', [])
@@ -82,6 +83,7 @@ def get_ferries_for_day(schedule_data: dict, target_date: date, use_12h: bool = 
                     original_time = ferry.get('time')
                     ferry_info = {
                         'service': service_name,
+                        'service_url': service_url,
                         'time': format_time(original_time, use_12h),
                         'original_time': original_time,  # Keep for sorting
                         'start_location': ferry.get('from', None),
