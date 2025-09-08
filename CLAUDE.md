@@ -37,11 +37,13 @@ uv run publish --start-date 2025-06-01 --days 30
 ## Architecture
 
 ### Package Structure
-- `src/cb_schedule/services/`
-  - `ctc/parse_schedule_image.py`: OCR processing for CTC image-based schedules
-  - `cbl/scrape_schedule.py`: Web scraping for CBL HTML schedules
+- `src/cb_schedule/`
   - `render_day.py`: Renders individual day schedules as HTML
   - `publish.py`: Generates complete static site with multiple pages
+  - `templates/`: Jinja2 HTML templates and CSS
+  - `services/`
+    - `ctc/parse_schedule_image.py`: OCR processing for CTC image-based schedules
+    - `cbl/scrape_schedule.py`: Web scraping for CBL HTML schedules
 
 ### Data Flow
 1. **Input Processing**: Raw schedules (images/web) → YAML format
@@ -75,4 +77,4 @@ services:
 
 The project uses standard Python tooling managed by uv. Always run commands with `uv run` to ensure proper dependency resolution.
 
-Templates are expected in a `templates/` directory and should include `day.html` and `home.html` for the publish functionality.
+Templates are located in `src/cb_schedule/templates/` and include `day.html` and `home.html` for the publish functionality.

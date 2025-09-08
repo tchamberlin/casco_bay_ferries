@@ -18,15 +18,13 @@ dependencies = [
     "python-dateutil>=2.9.0.post0",
     "pyyaml>=6.0.2",
     "rich>=14.1.0",
-    "tomli>=2.2.1",
-    "tomli-w>=1.2.0",
 ]
 
 [project.scripts]
 ctc-schedule = "cb_schedule.services.ctc.parse_schedule_image:main"
 cbl-schedule = "cb_schedule.services.cbl.scrape_schedule:main"
-render-day = "cb_schedule.services.render_day:main"
-publish = "cb_schedule.services.publish:main"
+render-day = "cb_schedule.render_day:main"
+publish = "cb_schedule.publish:main"
 
 [tool.uv]
 package = true
@@ -34,6 +32,8 @@ package = true
 [dependency-groups]
 dev = [
     "ipdb>=0.13.13",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
 ]
 
 [tool.ruff]
@@ -54,3 +54,14 @@ select = [
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+]

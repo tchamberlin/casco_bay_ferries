@@ -10,7 +10,7 @@ import logging
 from datetime import date, timedelta
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from cb_schedule.services.render_day import get_ferries_for_day, render_day_html, load_schedule
+from cb_schedule.render_day import get_ferries_for_day, render_day_html, load_schedule
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -154,7 +154,7 @@ def publish_site(
 def parse_args():
     parser = argparse.ArgumentParser(description="Publish static ferry schedule site")
     parser.add_argument("--schedule", default="schedule.yaml", help="Path to schedule YAML file")
-    parser.add_argument("--template-dir", default="templates", help="Directory containing templates")
+    parser.add_argument("--template-dir", default="src/cb_schedule/templates", help="Directory containing templates")
     parser.add_argument("--output-dir", default="site", help="Output directory for static site")
     parser.add_argument("--start-date", required=True, help="Start date (YYYY-MM-DD)")
     parser.add_argument("--days", type=int, default=30, help="Number of days to generate (default: 30)")

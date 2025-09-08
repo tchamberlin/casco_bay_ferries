@@ -68,6 +68,51 @@ def parse_cbl_schedule(url: str, html: str):
     return {"start": start, "end": end, "name": url.rstrip("/").split("/")[-1].title(), "ferries": ferries, "url": url}
 
 
+def correct_malformed_year(parsed_date: date, reference_date: date = None, raw_text: str = "") -> date:
+    """
+    Correct malformed years in parsed dates.
+
+    Args:
+        parsed_date: The date parsed by dateutil
+        reference_date: A reference date (e.g., start date) to infer correct year from
+        raw_text: The raw text that was parsed, for context
+
+    Returns:
+        Corrected date with proper year
+
+    Raises:
+        ValueError: If the date cannot be corrected and remains invalid
+    """
+    current_year = date.today().year
+
+    # If year seems reasonable (within ~50 years of current year), keep it
+    if abs(parsed_date.year - current_year) <= 50:
+        return parsed_date
+
+    # If we have a reference date and the parsed year is clearly wrong, use the reference year
+    if reference_date:
+        try:
+            corrected = parsed_date.replace(year=reference_date.year)
+            logger.info(
+                f"Corrected malformed year using reference: '{raw_text}' -> {corrected} (reference year: {reference_date.year})"
+            )
+
+            # Validate that corrected date makes sense (end >= start)
+            if corrected >= reference_date:
+                return corrected
+            else:
+                raise ValueError(f"Corrected end date {corrected} is before start date {reference_date}")
+
+        except ValueError as e:
+            logger.error(f"Could not correct malformed date '{raw_text}': {e}")
+            raise ValueError(f"Could not correct malformed date '{raw_text}': {e}")
+
+    # No reference date available and year is invalid
+    raise ValueError(
+        f"Invalid year in date '{raw_text}' -> {parsed_date} and no reference date available for correction"
+    )
+
+
 def parse_effective_dates(soup):
     # Find the "Effective:" label
     eff = soup.find("strong", string=re.compile(r"^\s*Effective", re.I))
@@ -90,8 +135,17 @@ def parse_effective_dates(soup):
     if not m:
         raise ValueError(f"Could not parse date range: {range_text!r}")
 
-    start = dateparse.parse(m.group(1)).date()
-    end = dateparse.parse(m.group(2)).date()
+    start_text = m.group(1).strip()
+    end_text = m.group(2).strip()
+
+    # Parse the dates
+    start = dateparse.parse(start_text).date()
+    end = dateparse.parse(end_text).date()
+
+    # Correct any malformed years
+    start = correct_malformed_year(start, raw_text=start_text)
+    end = correct_malformed_year(end, reference_date=start, raw_text=end_text)
+
     return start, end
 
 

@@ -152,7 +152,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Render daily ferry schedule as HTML")
     parser.add_argument("--date", required=True, help="Target date (YYYY-MM-DD)")
     parser.add_argument("--schedule", default="schedule.yaml", help="Path to schedule YAML file")
-    parser.add_argument("--template-dir", default="templates", help="Directory containing Jinja2 templates")
+    parser.add_argument(
+        "--template-dir", default="src/cb_schedule/templates", help="Directory containing Jinja2 templates"
+    )
     parser.add_argument("--output", required=True, help="Output HTML file path")
     parser.add_argument("--12h", action="store_true", help="Display times in 12-hour format instead of 24-hour")
     return parser.parse_args()

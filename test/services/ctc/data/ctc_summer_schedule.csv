@@ -1,0 +1,13 @@
+BUS DEPARTS ROUTE 1,DEPARTS CHEBEAGUE,DEPARTS COUSINS,MON,TUES,WED,THURS,FRI,SAT,SUN
+06:15,06:30,06:45,True,True,True,True,True,True,False
+07:45,08:00,08:15,True,True,True,True,True,True,True
+09:45,10:00,10:15,True,True,True,True,True,True,True
+11:45,12:00,12:15,True,True,True,True,False,True,True
+13:45,14:00,14:15,True,True,True,True,True,True,True
+15:30,15:45,16:00,True,False,True,True,False,True,True
+16:30,16:45,17:00,True,True,True,False,True,True,True
+18:00,18:15,18:30,True,True,True,True,True,True,False
+19:00,19:15,19:30,False,False,False,False,False,False,True
+19:45,20:00,20:15,True,True,True,True,True,True,False
+21:00,21:15,21:30,True,True,True,True,True,False,False
+22:15,22:30,22:45,False,False,False,False,True,True,False

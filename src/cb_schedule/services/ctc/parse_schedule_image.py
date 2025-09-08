@@ -34,6 +34,15 @@ def parse_time_to_24h(time_str):
     if time_str == "NOON":
         return "12:00"
 
+    # Check if it's already in 24-hour format (HH:MM)
+    if ":" in time_str and not any(c in time_str for c in ["AM", "PM"]):
+        try:
+            # Validate it's a valid time
+            datetime.strptime(time_str, "%H:%M")
+            return time_str
+        except ValueError:
+            pass
+
     # Parse 12-hour format and convert to 24-hour
     try:
         dt = datetime.strptime(time_str, "%I:%M%p")
@@ -44,10 +53,16 @@ def parse_time_to_24h(time_str):
 
 def is_service_available(cell_content):
     """Check if cell content indicates service is available (True) or not (False)."""
-    if not cell_content:
+    if not cell_content or not str(cell_content).strip():
         return False
 
     content = str(cell_content).strip().lower()
+
+    # Handle boolean strings
+    if content == "true":
+        return True
+    if content == "false":
+        return False
 
     # "No Service" or similar indicates False
     if "no service" in content:
@@ -167,7 +182,7 @@ def write_yaml_schedule(
                 "time": leave_chebeague_time,
                 "from": "Chebeague Island",
                 "to": "Cousins Island",
-                "byday": service_days,
+                "byday": service_days.copy(),
             }
             new_schedule["ferries"].append(leave_chebeague)
             logger.info(f"Added ferry: {leave_chebeague} on {service_days}")
@@ -176,7 +191,7 @@ def write_yaml_schedule(
                 "time": leave_cousins_time,
                 "from": "Cousins Island",
                 "to": "Chebeague Island",
-                "byday": service_days,
+                "byday": service_days.copy(),
             }
             new_schedule["ferries"].append(leave_cousins)
 
@@ -198,6 +213,23 @@ def write_yaml_schedule(
     # Write back to file
     with open(schedule_path, "w") as f:
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+
+def read_csv(csv_path: Path) -> list[list]:
+    """Read CSV file and return table data."""
+    if not csv_path.exists():
+        raise FileNotFoundError(f"CSV file not found: {csv_path}")
+
+    table = []
+    with open(csv_path, "r", newline="") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            table.append(row)
+
+    if not table:
+        raise ValueError("CSV file is empty")
+
+    return table
 
 
 def write_csv(table: list[list], output_path: Path | None = None):
@@ -234,7 +266,9 @@ def write_csv(table: list[list], output_path: Path | None = None):
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract ferry schedule and output as YAML")
-    parser.add_argument("--image", required=True, help="Path to schedule image file")
+    parser.add_argument("--image", help="Path to schedule image file")
+    parser.add_argument("--csv-input", help="Path to CSV file to read schedule data from (skips image parsing)")
+    parser.add_argument("--csv-output", help="Path to save CSV file (for caching parsed table data)")
     parser.add_argument("--output", help="Path to save YAML file (defaults to schedule.yaml)")
     parser.add_argument("--start", required=True, help="Start date for schedule (YYYY-MM-DD)")
     parser.add_argument("--name", required=True, help="The name of the schedule, e.g. Summer or Winter")
@@ -245,9 +279,14 @@ def parse_args():
 
 def main():
     args = parse_args()
-    image_path = Path(args.image)
-    if not image_path.exists():
-        logger.error(f"Image file not found: {image_path}")
+
+    # Validate that either image or csv-input is provided
+    if not args.image and not args.csv_input:
+        logger.error("Either --image or --csv-input must be provided")
+        sys.exit(1)
+
+    if args.image and args.csv_input:
+        logger.error("Cannot specify both --image and --csv-input")
         sys.exit(1)
 
     try:
@@ -264,7 +303,24 @@ def main():
             logger.error(f"Invalid end date format: {args.end}. Use YYYY-MM-DD")
             sys.exit(1)
 
-    table = parse_schedule_image(image_path)
+    # Get table data either from image parsing or CSV input
+    if args.csv_input:
+        logger.info(f"Reading schedule data from CSV: {args.csv_input}")
+        csv_path = Path(args.csv_input)
+        table = read_csv(csv_path)
+    else:
+        image_path = Path(args.image)
+        if not image_path.exists():
+            logger.error(f"Image file not found: {image_path}")
+            sys.exit(1)
+
+        logger.info(f"Parsing schedule image: {image_path}")
+        table = parse_schedule_image(image_path)
+
+        # Optionally save CSV for future use
+        if args.csv_output:
+            logger.info(f"Saving parsed data to CSV: {args.csv_output}")
+            write_csv(table, Path(args.csv_output))
 
     output_path = Path(args.output) if args.output else Path("schedule.yaml")
     write_yaml_schedule(table, args.name, start_date, end_date, output_path)
