@@ -5,8 +5,6 @@ Render a specific day's ferry schedule as HTML using Jinja2 templates.
 
 import argparse
 import sys
-import traceback
-import shutil
 import logging
 from datetime import datetime, date
 from pathlib import Path

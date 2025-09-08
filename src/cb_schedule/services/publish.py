@@ -7,9 +7,8 @@ import argparse
 import shutil
 import sys
 import logging
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from pathlib import Path
-import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from cb_schedule.services.render_day import get_ferries_for_day, render_day_html, load_schedule
 

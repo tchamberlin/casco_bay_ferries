@@ -4,9 +4,8 @@ Scrape Casco Bay Lines ferry schedule and convert to YAML format.
 
 import logging
 import argparse
-import sys
 import re
-from datetime import datetime, date
+from datetime import date
 from pathlib import Path
 import httpx
 from bs4 import BeautifulSoup

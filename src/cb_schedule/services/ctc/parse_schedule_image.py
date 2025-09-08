@@ -25,7 +25,7 @@ if not logger.handlers:
 def parse_time_to_24h(time_str):
     """Parse time string like '8:15PM' and convert to 24H format."""
     if not time_str or not time_str.strip():
-        raise ValueError(f"Empty time string")
+        raise ValueError("Empty time string")
 
     # Clean up the time string
     time_str = time_str.strip().replace("\n", " ").replace(" ", "").upper()
