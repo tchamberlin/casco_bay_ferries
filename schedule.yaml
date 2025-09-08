@@ -2,7 +2,8 @@ services:
   ctc:
     tzid: America/New_York
     schedules:
-    - start: 2022-10-14
+    - name: Winter
+      start: 2022-10-14
       end: 2023-05-18
       url: https://www.ctcferry.org/#schedule
       ferries:
@@ -77,27 +78,22 @@ services:
         - FR
         - SA
     - name: Summer
-      url: https://www.ctcferry.org/#schedule
       start: 2025-05-16
       ferries:
       - time: 06:30
         from: Chebeague Island
         to: Cousins Island
-        byday: &id001
+        byday:
         - MO
         - TU
         - WE
         - TH
         - FR
         - SA
-      - time: 06:45
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id001
       - time: 08:00
         from: Chebeague Island
         to: Cousins Island
-        byday: &id002
+        byday:
         - MO
         - TU
         - WE
@@ -105,14 +101,10 @@ services:
         - FR
         - SA
         - SU
-      - time: 08:15
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id002
       - time: '10:00'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id003
+        byday:
         - MO
         - TU
         - WE
@@ -120,28 +112,20 @@ services:
         - FR
         - SA
         - SU
-      - time: '10:15'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id003
       - time: '12:00'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id004
+        byday:
         - MO
         - TU
         - WE
         - TH
         - SA
         - SU
-      - time: '12:15'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id004
       - time: '14:00'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id005
+        byday:
         - MO
         - TU
         - WE
@@ -149,97 +133,65 @@ services:
         - FR
         - SA
         - SU
-      - time: '14:15'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id005
       - time: '15:45'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id006
+        byday:
         - MO
         - WE
         - TH
         - SA
         - SU
-      - time: '16:00'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id006
       - time: '16:45'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id007
+        byday:
         - MO
         - TU
         - WE
         - FR
         - SA
         - SU
-      - time: '17:00'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id007
       - time: '18:15'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id008
+        byday:
         - MO
         - TU
         - WE
         - TH
         - FR
         - SA
-      - time: '18:30'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id008
       - time: '19:15'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id009
+        byday:
         - SU
-      - time: '19:30'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id009
       - time: '20:00'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id010
+        byday:
         - MO
         - TU
         - WE
         - TH
         - FR
         - SA
-      - time: '20:15'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id010
       - time: '21:15'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id011
+        byday:
         - MO
         - TU
         - WE
         - TH
         - FR
-      - time: '21:30'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id011
       - time: '22:30'
         from: Chebeague Island
         to: Cousins Island
-        byday: &id012
+        byday:
         - FR
         - SA
-      - time: '22:45'
-        from: Cousins Island
-        to: Chebeague Island
-        byday: *id012
   cbl:
     tzid: America/New_York
     schedules:
