@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script>
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+
+        // Try to redirect to today's schedule, fallback to first available date
+        const availableDates = [{% for date in available_dates %}"{{ date.isoformat() }}"{% if not loop.last %}, {% endif %}{% endfor %}];
+
+        if (availableDates.includes(today)) {
+            window.location.href = '/' + today + '/';
+        } else {
+            // Redirect to first available date if today is not available
+            window.location.href = '/' + availableDates[0] + '/';
+        }
+    </script>
+</head>
+<body>
+    <p>Redirecting to ferry schedule...</p>
+    <p>If you are not redirected automatically, <a href="/{{ fallback_date }}/">click here</a>.</p>
+</body>
+</html>

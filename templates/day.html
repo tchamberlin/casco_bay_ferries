@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chebeague Ferry Schedule - {{ date_formatted }}</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <header class="page-header">
+        <div class="header-row">
+            <div class="title-section">
+                <h1>Chebeague Ferry Schedule</h1>
+            </div>
+            <div class="header-links">
+                <div class="date-picker-group">
+                    <span class="day-name">{{ day_name }}</span>
+                    <input type="date" id="date-picker" class="date-picker" value="{{ date.isoformat() }}" title="Jump to date">
+                </div>
+                <div class="filter-buttons">
+                    <a href="/{{ date.isoformat() }}/" class="filter-btn">All</a>
+                    <a href="/{{ date.isoformat() }}/arrive/" class="filter-btn">Arrivals</a>
+                    <a href="/{{ date.isoformat() }}/depart/" class="filter-btn">Departures</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="schedule-container">
+        {% if ferries %}
+
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th class="time-column">Departure</th>
+                    <th class="start-column">From</th>
+                    <th class="end-column">To</th>
+                    <th class="service-column">Service</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ferry in ferries %}
+                <tr class="ferry-row ferry-{{ ferry.service }} {% if show_direction_colors %}{% if ferry.end_location == 'Chebeague Island' %}to-chebeague{% elif ferry.start_location == 'Chebeague Island' %}from-chebeague{% endif %}{% endif %}">
+                    <td class="time-cell">{{ ferry.time }}</td>
+                    <td class="location-cell">{{ ferry.start_location or "TBD" }}</td>
+                    <td class="location-cell">{{ ferry.end_location or "TBD" }}</td>
+                    <td class="service-cell">
+                        <a href="{{ ferry.service_url }}" class="service-name" target="_blank">{{ ferry.service.upper() }}</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-service">
+            <h3>No Ferry Service</h3>
+            <p>There are no scheduled ferries for {{ date_formatted }}.</p>
+        </div>
+        {% endif %}
+    </main>
+
+    <footer class="page-footer">
+        <p>Schedule information is subject to change, and accuracy is not guaranteed. Please check with ferry operators for the most current information.</p>
+        <p>Generated on {{ generation_time }}</p>
+    </footer>
+
+    <script>
+        document.getElementById('date-picker').addEventListener('change', function(e) {
+            const selectedDate = e.target.value;
+            if (selectedDate) {
+                // Get current path to determine if we're on a filtered view
+                const currentPath = window.location.pathname;
+                let targetPath = '/' + selectedDate + '/';
+
+                // Preserve filter if we're on arrive or depart page
+                if (currentPath.includes('/arrive/')) {
+                    targetPath = '/' + selectedDate + '/arrive/';
+                } else if (currentPath.includes('/depart/')) {
+                    targetPath = '/' + selectedDate + '/depart/';
+                }
+
+                window.location.href = targetPath;
+            }
+        });
+    </script>
+</body>
+</html>
