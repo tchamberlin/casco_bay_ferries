@@ -66,3 +66,9 @@ addopts = [
     "--tb=short",
     "--strict-markers",
 ]
+
+[tool.pyright]
+# This is specificially for pre-commit: force pyright to use our venv,
+# otherwise it can't import anything
+venvPath = "."
+venv = ".venv"
