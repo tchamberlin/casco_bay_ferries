@@ -6,23 +6,19 @@ Publish a static ferry schedule site with HTML pages for multiple days.
 import argparse
 import shutil
 import sys
-import logging
 from datetime import date, timedelta
 from pathlib import Path
+from typing import Any, Dict, List
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from cb_schedule.render_day import get_ferries_for_day, render_day_html, load_schedule
 
 # Configure logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+from cb_schedule.logging_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
-def copy_static_files(template_dir: Path, output_dir: Path):
+def copy_static_files(template_dir: Path, output_dir: Path) -> None:
     """Copy CSS and other static files to output directory."""
     css_source = template_dir / "styles.css"
     if css_source.exists():
@@ -33,7 +29,9 @@ def copy_static_files(template_dir: Path, output_dir: Path):
         logger.warning(f"CSS file not found at {css_source}")
 
 
-def generate_index_html(template_dir: Path, output_dir: Path, date_range: list, title: str = "Ferry Schedule"):
+def generate_index_html(
+    template_dir: Path, output_dir: Path, date_range: List[date], title: str = "Ferry Schedule"
+) -> None:
     """Generate a simple index.html that redirects to today's date."""
     # Set up Jinja2 environment
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=select_autoescape(["html", "xml"]))
@@ -53,7 +51,7 @@ def generate_index_html(template_dir: Path, output_dir: Path, date_range: list, 
     logger.info(f"Generated index: {index_path}")
 
 
-def filter_ferries_by_direction(ferries, direction):
+def filter_ferries_by_direction(ferries: List[Dict[str, Any]], direction: str) -> List[Dict[str, Any]]:
     """Filter ferries by arrival/departure direction."""
     if direction == "arrive":
         return [f for f in ferries if f.get("end_location") == "Chebeague Island"]
@@ -63,7 +61,9 @@ def filter_ferries_by_direction(ferries, direction):
         return ferries
 
 
-def generate_filtered_pages(schedule_path, template_dir, output_dir, start_date, days=30, use_12h=False):
+def generate_filtered_pages(
+    schedule_path: Path, template_dir: Path, output_dir: Path, start_date: date, days: int = 30, use_12h: bool = False
+) -> None:
     """Generate filtered pages for a date range with structure /<date>/{arrive,depart}/"""
 
     # Load schedule data once
@@ -106,7 +106,7 @@ def generate_filtered_pages(schedule_path, template_dir, output_dir, start_date,
 
 def publish_site(
     schedule_path: Path, template_dir: Path, output_dir: Path, start_date: date, days: int = 30, use_12h: bool = False
-):
+) -> None:
     """Publish a complete static site with multiple day pages."""
 
     # Create output directory
@@ -151,7 +151,7 @@ def publish_site(
     logger.info(f"To serve locally: python -m http.server -d {output_dir}")
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Publish static ferry schedule site")
     parser.add_argument("--schedule", default="schedule.yaml", help="Path to schedule YAML file")
     parser.add_argument("--template-dir", default="src/cb_schedule/templates", help="Directory containing templates")
@@ -162,7 +162,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
     # Parse start date

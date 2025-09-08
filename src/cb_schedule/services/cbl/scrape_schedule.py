@@ -2,54 +2,51 @@
 Scrape Casco Bay Lines ferry schedule and convert to YAML format.
 """
 
-import logging
 import argparse
 import re
 from datetime import date
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 import httpx
-from bs4 import BeautifulSoup
+from selectolax.parser import HTMLParser
 import yaml
 from dateutil import parser as dateparse
 
 # Configure logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+from cb_schedule.logging_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
-def get_sched(url: str):
+def get_sched(url: str) -> str:
     response = httpx.get(url)
     response.raise_for_status()
     return response.text
 
 
-def parse_cbl_schedule(url: str, html: str):
+def parse_cbl_schedule(url: str, html: str) -> Dict[str, Any]:
     """Scrape the Chebeague Island summer schedule from Casco Bay Lines website."""
 
-    soup = BeautifulSoup(html, "html.parser")
+    parser = HTMLParser(html)
 
     # Find the schedule table
-    table = soup.find("table")
+    table = parser.css_first("table")
     if not table:
         raise ValueError("No table found on the page")
 
-    rows = table.find_all("tr")[2:]
+    rows = table.css("tr")[2:]
 
     is_am = True
     ferries = []
     for row in rows:
-        am_pm = row.find("td", class_="column-1")
-        if am_pm and am_pm.get_text().strip().lower() == "pm":
+        am_pm = row.css_first("td.column-1")
+        if am_pm and am_pm.text().strip().lower() == "pm":
             is_am = False
 
-        leave_portland_time, leave_portland_days = parse_time_to_24h(
-            row.find("td", class_="column-2").get_text(), is_pm=not is_am
-        )
+        portland_cell = row.css_first("td.column-2")
+        if not portland_cell:
+            continue
+        leave_portland_time, leave_portland_days = parse_time_to_24h(portland_cell.text(), is_pm=not is_am)
         ferries.append(
             {
                 "from": "Portland",
@@ -58,17 +55,18 @@ def parse_cbl_schedule(url: str, html: str):
                 "days": leave_portland_days,
             }
         )
-        leave_chebeague_time, leave_chebeague_days = parse_time_to_24h(
-            row.find("td", class_="column-3").get_text(), is_pm=not is_am
-        )
+        chebeague_cell = row.css_first("td.column-3")
+        if not chebeague_cell:
+            continue
+        leave_chebeague_time, leave_chebeague_days = parse_time_to_24h(chebeague_cell.text(), is_pm=not is_am)
         ferries.append(
             {"from": "Chebeague Island", "to": "Portland", "time": leave_chebeague_time, "days": leave_chebeague_days}
         )
-    start, end = parse_effective_dates(soup)
+    start, end = parse_effective_dates(parser)
     return {"start": start, "end": end, "name": url.rstrip("/").split("/")[-1].title(), "ferries": ferries, "url": url}
 
 
-def correct_malformed_year(parsed_date: date, reference_date: date = None, raw_text: str = "") -> date:
+def correct_malformed_year(parsed_date: date, reference_date: date | None = None, raw_text: str = "") -> date:
     """
     Correct malformed years in parsed dates.
 
@@ -113,19 +111,31 @@ def correct_malformed_year(parsed_date: date, reference_date: date = None, raw_t
     )
 
 
-def parse_effective_dates(soup):
-    # Find the "Effective:" label
-    eff = soup.find("strong", string=re.compile(r"^\s*Effective", re.I))
+def parse_effective_dates(parser: HTMLParser) -> Tuple[date, date]:
+    # Find the "Effective:" label - look for strong tags and check their text
+    strong_tags = parser.css("strong")
+    eff = None
+    for strong in strong_tags:
+        if re.match(r"^\s*Effective", strong.text(), re.I):
+            eff = strong
+            break
+
     if eff is None:
         raise ValueError("Could not find an 'Effective:' label.")
 
-    # Gather text after the label up to a <br> or end of container
-    parts = []
-    for sib in eff.next_siblings:
-        if getattr(sib, "name", None) == "br":
-            break
-        parts.append(str(sib))
-    range_text = BeautifulSoup("".join(parts), "html.parser").get_text(" ", strip=True)
+    # Get the parent element and extract text after the strong tag
+    parent = eff.parent
+    if not parent:
+        raise ValueError("Could not find parent of Effective label.")
+
+    # Get all text from the parent and extract the date range
+    full_text = parent.text(strip=True)
+    # Remove the "Effective:" part and get what follows
+    effective_match = re.search(r"Effective:?\s*(.+)", full_text, re.I)
+    if not effective_match:
+        raise ValueError(f"Could not extract date range from: {full_text}")
+
+    range_text = effective_match.group(1).strip()
 
     # Normalize any dash variant to a single hyphen
     range_text = re.sub(r"[\u2012\u2013\u2014\u2015-]+", "-", range_text)
@@ -149,7 +159,7 @@ def parse_effective_dates(soup):
     return start, end
 
 
-def parse_time_to_24h(time_str, is_pm=False):
+def parse_time_to_24h(time_str: Optional[str], is_pm: bool = False) -> Tuple[str, List[str]]:
     """Parse time string and convert to 24H format."""
     if not time_str or not time_str.strip():
         raise ValueError("Empty time string")
@@ -188,7 +198,9 @@ def parse_time_to_24h(time_str, is_pm=False):
         raise ValueError(f"Could not parse time '{time_str}': {e}") from e
 
 
-def convert_to_yaml_schedule(url, schedule_data, schedule_path: Path = Path("schedule.yaml")):
+def convert_to_yaml_schedule(
+    url: str, schedule_data: Dict[str, Any], schedule_path: Path = Path("schedule.yaml")
+) -> None:
     """Convert scraped schedule data to YAML format matching the existing structure."""
 
     # Load existing YAML
@@ -236,7 +248,7 @@ def convert_to_yaml_schedule(url, schedule_data, schedule_path: Path = Path("sch
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Scrape Casco Bay Lines ferry schedule and convert to YAML")
     parser.add_argument("url")
     parser.add_argument("--path", type=Path)
@@ -244,7 +256,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
     if args.path and args.path.exists():

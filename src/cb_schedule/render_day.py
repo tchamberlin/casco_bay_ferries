@@ -5,23 +5,19 @@ Render a specific day's ferry schedule as HTML using Jinja2 templates.
 
 import argparse
 import sys
-import logging
 from datetime import datetime, date
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 # Configure logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+from cb_schedule.logging_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
-def load_schedule(schedule_path: Path):
+def load_schedule(schedule_path: Path) -> Dict[str, Any]:
     """Load ferry schedule data from YAML file."""
     if not schedule_path.exists():
         raise FileNotFoundError(f"Schedule file not found: {schedule_path}")
@@ -30,13 +26,13 @@ def load_schedule(schedule_path: Path):
         return yaml.safe_load(f)
 
 
-def get_day_abbreviation(target_date: date):
+def get_day_abbreviation(target_date: date) -> str:
     """Convert date to day abbreviation (MO, TU, etc.)."""
     day_map = ["MO", "TU", "WE", "TH", "FR", "SA", "SU"]
     return day_map[target_date.weekday()]
 
 
-def format_time(time_str: str, use_12h: bool = False):
+def format_time(time_str: str, use_12h: bool = False) -> str:
     """Format time string to 12H or 24H format."""
     if not time_str:
         return time_str
@@ -53,7 +49,7 @@ def format_time(time_str: str, use_12h: bool = False):
         return time_str
 
 
-def find_active_schedule(schedules: list, target_date: date):
+def find_active_schedule(schedules: List[Dict[str, Any]], target_date: date) -> Optional[Dict[str, Any]]:
     """Find the active schedule for the target date."""
     for schedule in schedules:
         start_date = schedule.get("start")
@@ -65,7 +61,9 @@ def find_active_schedule(schedules: list, target_date: date):
     return None
 
 
-def get_ferries_for_day(schedule_data: dict, target_date: date, use_12h: bool = False):
+def get_ferries_for_day(
+    schedule_data: Dict[str, Any], target_date: date, use_12h: bool = False
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], str]:
     """Get all ferries running on the target date from all services."""
     day_abbrev = get_day_abbreviation(target_date)
     all_ferries = []
@@ -108,18 +106,18 @@ def get_ferries_for_day(schedule_data: dict, target_date: date, use_12h: bool = 
 
     # Sort ferries by original 24H time
     all_ferries.sort(key=lambda x: x.get("original_time", "00:00"))
-    return all_ferries, services_info, primary_timezone
+    return all_ferries, services_info, primary_timezone or "UTC"
 
 
 def render_day_html(
     target_date: date,
-    ferries: list,
-    services: list,
+    ferries: List[Dict[str, Any]],
+    services: List[Dict[str, Any]],
     timezone: str,
     template_dir: Path,
     output_path: Path,
     show_direction_colors: bool = True,
-):
+) -> None:
     """Render the day's schedule as HTML."""
 
     # Set up Jinja2 environment
@@ -148,7 +146,7 @@ def render_day_html(
         f.write(html_content)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render daily ferry schedule as HTML")
     parser.add_argument("--date", required=True, help="Target date (YYYY-MM-DD)")
     parser.add_argument("--schedule", default="schedule.yaml", help="Path to schedule YAML file")
@@ -160,7 +158,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
     # Parse target date

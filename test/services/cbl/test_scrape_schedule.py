@@ -6,7 +6,7 @@ import pytest
 from datetime import date
 from pathlib import Path
 from unittest.mock import patch, Mock
-from bs4 import BeautifulSoup
+from selectolax.parser import HTMLParser
 
 from cb_schedule.services.cbl.scrape_schedule import (
     parse_cbl_schedule,
@@ -201,8 +201,8 @@ class TestParseEffectiveDates:
             <strong>Effective:</strong> June 21, 2025 – September 1, 2025
         </div>
         """
-        soup = BeautifulSoup(html, "html.parser")
-        start, end = parse_effective_dates(soup)
+        parser = HTMLParser(html)
+        start, end = parse_effective_dates(parser)
 
         assert start == date(2025, 6, 21)
         assert end == date(2025, 9, 1)
@@ -214,8 +214,8 @@ class TestParseEffectiveDates:
             <strong>Effective:</strong> September 2, 2025 – October 13, 202
         </div>
         """
-        soup = BeautifulSoup(html, "html.parser")
-        start, end = parse_effective_dates(soup)
+        parser = HTMLParser(html)
+        start, end = parse_effective_dates(parser)
 
         assert start == date(2025, 9, 2)
         # End date should be corrected to 2025 based on start date
@@ -228,8 +228,8 @@ class TestParseEffectiveDates:
             <strong>Effective:</strong> June 21, 2025 — September 1, 2025
         </div>
         """
-        soup = BeautifulSoup(html, "html.parser")
-        start, end = parse_effective_dates(soup)
+        parser = HTMLParser(html)
+        start, end = parse_effective_dates(parser)
 
         assert start == date(2025, 6, 21)
         assert end == date(2025, 9, 1)
@@ -237,10 +237,10 @@ class TestParseEffectiveDates:
     def test_no_effective_label(self):
         """Test error handling when no 'Effective:' label is found."""
         html = "<div><strong>Other:</strong> Some text</div>"
-        soup = BeautifulSoup(html, "html.parser")
+        parser = HTMLParser(html)
 
         with pytest.raises(ValueError, match="Could not find an 'Effective:' label"):
-            parse_effective_dates(soup)
+            parse_effective_dates(parser)
 
     def test_invalid_date_range_format(self):
         """Test error handling for invalid date range format."""
@@ -249,10 +249,10 @@ class TestParseEffectiveDates:
             <strong>Effective:</strong> Invalid date range
         </div>
         """
-        soup = BeautifulSoup(html, "html.parser")
+        parser = HTMLParser(html)
 
         with pytest.raises(ValueError, match="Could not parse date range"):
-            parse_effective_dates(soup)
+            parse_effective_dates(parser)
 
 
 class TestGetSched:

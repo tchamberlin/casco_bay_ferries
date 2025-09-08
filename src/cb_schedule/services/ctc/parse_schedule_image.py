@@ -2,27 +2,23 @@
 Extract ferry schedule from image using OCR and convert to YAML format.
 """
 
-import logging
 import argparse
 import sys
 import csv
 from datetime import datetime, date
 from pathlib import Path
+from typing import Any, List, Optional
 from img2table.document import Image
 from img2table.ocr import PaddleOCR
 import yaml
 
 # Configure logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-if not logger.handlers:
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+from cb_schedule.logging_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
-def parse_time_to_24h(time_str):
+def parse_time_to_24h(time_str: str) -> str:
     """Parse time string like '8:15PM' and convert to 24H format."""
     if not time_str or not time_str.strip():
         raise ValueError("Empty time string")
@@ -51,7 +47,7 @@ def parse_time_to_24h(time_str):
         raise ValueError(f"Could not parse time '{time_str}': {e}")
 
 
-def is_service_available(cell_content):
+def is_service_available(cell_content: Any) -> bool:
     """Check if cell content indicates service is available (True) or not (False)."""
     if not cell_content or not str(cell_content).strip():
         return False
@@ -76,7 +72,7 @@ def is_service_available(cell_content):
     raise ValueError(f"Failed to parse {cell_content}")
 
 
-def parse_schedule_image(image_path: Path):
+def parse_schedule_image(image_path: Path) -> List[List[str]]:
     """Extract table and output as CSV with 24H time and True/False values."""
 
     # Initialize OCR
@@ -113,12 +109,12 @@ def parse_schedule_image(image_path: Path):
 
 
 def write_yaml_schedule(
-    table: list[list],
+    table: List[List[str]],
     name: str,
     start_date: date,
-    end_date: date | None = None,
+    end_date: Optional[date] = None,
     schedule_path: Path = Path("schedule.yaml"),
-):
+) -> None:
     """Write ferry schedule data to YAML file."""
 
     if not table:
@@ -215,7 +211,7 @@ def write_yaml_schedule(
         yaml.dump(data, f, default_flow_style=False, sort_keys=False)
 
 
-def read_csv(csv_path: Path) -> list[list]:
+def read_csv(csv_path: Path) -> List[List[str]]:
     """Read CSV file and return table data."""
     if not csv_path.exists():
         raise FileNotFoundError(f"CSV file not found: {csv_path}")
@@ -232,7 +228,7 @@ def read_csv(csv_path: Path) -> list[list]:
     return table
 
 
-def write_csv(table: list[list], output_path: Path | None = None):
+def write_csv(table: List[List[str]], output_path: Optional[Path] = None) -> None:
     if not table:
         raise ValueError("No data found in table")
 
@@ -264,7 +260,7 @@ def write_csv(table: list[list], output_path: Path | None = None):
             output_file.close()
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Extract ferry schedule and output as YAML")
     parser.add_argument("--image", help="Path to schedule image file")
     parser.add_argument("--csv-input", help="Path to CSV file to read schedule data from (skips image parsing)")
@@ -277,7 +273,7 @@ def parse_args():
     return args
 
 
-def main():
+def main() -> None:
     args = parse_args()
 
     # Validate that either image or csv-input is provided
